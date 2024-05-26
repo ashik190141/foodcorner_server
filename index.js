@@ -137,7 +137,7 @@ async function run() {
       res.send(result)
     })
 
-    app.put("/purchase-recipe", async (req, res) => {
+    app.put("/purchase-recipe", verifyJwt, async (req, res) => {
       const body = req.body;
       const id = body.recipeId;
       const userQuery = { email: body.email };
@@ -280,12 +280,24 @@ async function run() {
       })
     })
 
-    app.get("/recipe-same-category/:id", async (req, res) => {
+    app.get("/recipe-same-category/:id", verifyJwt, async (req, res) => {
       const id = req.params.id;
       const recipeInfo = await recipesCollection.findOne({_id : new ObjectId(id)})
       const allRecipe = await recipesCollection.find({ category: recipeInfo.category }).toArray();
       const result = allRecipe.filter(recipe => recipe._id != id)
       res.send(result);
+    })
+
+    app.get("/payment-history/:email", verifyJwt, async (req, res) => {
+      const email = req.params.email;
+      // console.log(email);
+      const paymentHistory = await paymentCollection.find({ email: email }).toArray();
+      res.send(paymentHistory)
+    })
+
+    app.get("/all-users", async (req, res) => {
+      const result = await usersCollection.find().toArray();
+      res.send(result)
     })
 
     // Send a ping to confirm a successful connection
